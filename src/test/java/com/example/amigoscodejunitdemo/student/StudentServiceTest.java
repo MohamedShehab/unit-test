@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -111,5 +112,36 @@ public class StudentServiceTest {
                 .hasMessageContaining("Student with id " + id + " does not exists");
 
         verify(studentRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void canFindOne() {
+        // given
+        Long studentId = 1L;
+        Student student = Student
+                .builder()
+                .id(1L)
+                .name("Ahmed")
+                .email("ahmed@gmail.com")
+                .gender(Gender.MALE)
+                .build();
+        given(studentRepository.findById(studentId)).willReturn(Optional.of(student));
+        // when
+        underTest.findOne(studentId);
+        // then
+        verify(studentRepository).findById(studentId);
+    }
+
+    @Test
+    void willThrowFindOne() {
+        // given
+        Long studentId = 1L;
+        given(studentRepository.findById(studentId)).willReturn(Optional.empty());
+        // when
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> underTest.findOne(studentId))
+                .isInstanceOf(StudentNotFoundException.class)
+                .hasMessageContaining("Student dose not exist.");
+        // then
+        verify(studentRepository).findById(studentId);
     }
 }
